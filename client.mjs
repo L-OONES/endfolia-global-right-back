@@ -20,6 +20,15 @@ export function activateWithModes(folium, directBack) {
         settingsPanel(container, { settings }) {
             const style = document.createElement('style');
             style.textContent = `
+                .back-shortcut {
+                    margin: 0 0 8px; padding: 5px 8px; border-radius: 6px;
+                    background: color-mix(in srgb, var(--folium-accent, currentColor) 13%, transparent);
+                    color: var(--folium-primary, inherit); font-size: 12px; font-weight: 400;
+                }
+                .back-shortcut kbd {
+                    padding: 1px 4px; border-radius: 4px; font: inherit;
+                    background: color-mix(in srgb, currentColor 12%, transparent);
+                }
                 .back-mode { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-weight: 400; }
                 .back-mode button {
                     min-width: 48px; height: 24px; padding: 0 6px; border: 0;
@@ -39,7 +48,14 @@ export function activateWithModes(folium, directBack) {
                 .back-mode button:disabled { opacity: .45; cursor: default; }
                 .back-mode span { font-size: 12px; color: var(--folium-secondary, inherit); }
             `;
-            container.append(style);
+            const shortcut = document.createElement('p');
+            shortcut.className = 'back-shortcut';
+            const shift = document.createElement('kbd');
+            shift.textContent = 'Shift';
+            const rightClick = document.createElement('kbd');
+            rightClick.textContent = '右键';
+            shortcut.append(shift, '＋', rightClick, '启动原菜单');
+            container.append(style, shortcut);
             const buttons = modes.map(({ value, label, description }) => {
                 const row = document.createElement('div');
                 row.className = 'back-mode';
