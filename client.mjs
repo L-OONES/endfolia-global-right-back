@@ -1,9 +1,9 @@
 const modes = [
-    { value: 'jingxie', label: '靖歇', description: '海报展开或磁贴有焦点时先清掉状态，再次右键才回退上级' },
-    { value: 'fanfu', label: '翻覆', description: '一次右键回退上级' },
+    { label: '翻覆', description: '未开放', available: false },
+    { label: '靖歇', description: '海报展开或磁贴有焦点时先清掉状态，再次右键才回退上级', available: true },
 ];
 
-export function activateWithModes(folium, directBack) {
+export default function activate(folium) {
     if (folium.env.context !== 'main') return;
 
     const ui = folium.ui;
@@ -15,9 +15,9 @@ export function activateWithModes(folium, directBack) {
         settings: [{
             key: 'mode', type: 'select', label: { 'zh-CN': '右键返回方式', en: 'Right-click back mode' },
             defaultValue: 'jingxie',
-            options: (directBack ? modes : modes.slice(0, 1)).map(({ value, label }) => ({ value, label: { 'zh-CN': label } })),
+            options: [{ value: 'jingxie', label: { 'zh-CN': '靖歇' } }],
         }],
-        settingsPanel(container, { settings }) {
+        settingsPanel(container) {
             const style = document.createElement('style');
             style.textContent = `
                 .back-shortcut {
@@ -56,28 +56,19 @@ export function activateWithModes(folium, directBack) {
             rightClick.textContent = '右键';
             shortcut.append(shift, '＋', rightClick, '启动原菜单');
             container.append(style, shortcut);
-            const buttons = [...modes].reverse().map(({ value, label, description }) => {
+            for (const { label, description, available } of modes) {
                 const row = document.createElement('div');
                 row.className = 'back-mode';
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.textContent = label;
-                button.disabled = value === 'fanfu' && !directBack;
+                button.disabled = !available;
+                button.setAttribute('aria-pressed', String(available));
                 const help = document.createElement('span');
-                help.textContent = button.disabled ? '未开放' : description;
-                button.addEventListener('click', () => settings.set({ mode: value }));
+                help.textContent = description;
                 row.append(button, help);
                 container.append(row);
-                return { value, button };
-            });
-            function sync() {
-                for (const { value, button } of buttons) {
-                    const selected = settings.get().mode === value;
-                    button.setAttribute('aria-pressed', String(selected));
-                }
             }
-            sync();
-            return settings.onChange(sync);
         },
     });
 
@@ -88,7 +79,7 @@ export function activateWithModes(folium, directBack) {
             || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
 
         // Decide before Folia's click-outside handlers can change the top layer.
-        handledPress = (section.settings.get().mode === 'fanfu' && directBack?.()) || ui.back();
+        handledPress = ui.back();
         if (!handledPress) return;
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -111,6 +102,3 @@ export function activateWithModes(folium, directBack) {
     };
 }
 
-export default function activate(folium) {
-    return activateWithModes(folium);
-}
