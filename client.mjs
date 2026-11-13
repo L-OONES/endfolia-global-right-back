@@ -56,7 +56,7 @@ export function activateWithModes(folium, directBack) {
             rightClick.textContent = '右键';
             shortcut.append(shift, '＋', rightClick, '启动原菜单');
             container.append(style, shortcut);
-            const buttons = modes.map(({ value, label, description }) => {
+            const buttons = [...modes].reverse().map(({ value, label, description }) => {
                 const row = document.createElement('div');
                 row.className = 'back-mode';
                 const button = document.createElement('button');
