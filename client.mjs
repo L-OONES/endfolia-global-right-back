@@ -17,17 +17,34 @@ export function activateWithModes(folium, directBack) {
             options: (directBack ? modes : modes.slice(0, 1)).map(({ value, label }) => ({ value, label })),
         }],
         settingsPanel(container, { settings }) {
+            const style = document.createElement('style');
+            style.textContent = `
+                .back-mode { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+                .back-mode button {
+                    min-width: 53px; padding: 2px 6px; border: 1px solid currentColor;
+                    border-radius: 5px; font: inherit; font-size: .84em; color: inherit;
+                    background: transparent; cursor: pointer;
+                }
+                .back-mode button[aria-pressed="true"] {
+                    background: var(--folium-primary, #eee);
+                    border-color: var(--folium-primary, #eee);
+                    color: var(--folium-bg, #222);
+                    font-weight: 700;
+                }
+                .back-mode button[aria-pressed="true"]::before { content: '✓ '; }
+                .back-mode button:disabled { background: #80808022; opacity: .5; cursor: default; }
+                .back-mode span { font-size: .86em; }
+            `;
+            container.append(style);
             const buttons = modes.map(({ value, label, description }) => {
                 const row = document.createElement('div');
-                row.style.cssText = 'display:flex;align-items:center;gap:.65em;margin:.35em 0';
+                row.className = 'back-mode';
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.textContent = label;
                 button.disabled = value === 'fanfu' && !directBack;
-                button.style.cssText = 'font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-radius:6px;padding:.25em .65em';
-                if (button.disabled) button.style.opacity = '.45';
                 const help = document.createElement('span');
-                help.textContent = description;
+                help.textContent = button.disabled ? '未开放' : description;
                 button.addEventListener('click', () => settings.set({ mode: value }));
                 row.append(button, help);
                 container.append(row);
@@ -37,7 +54,6 @@ export function activateWithModes(folium, directBack) {
                 for (const { value, button } of buttons) {
                     const selected = settings.get().mode === value;
                     button.setAttribute('aria-pressed', String(selected));
-                    button.style.fontWeight = selected ? 'bold' : 'normal';
                 }
             }
             sync();
